@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNDERTAKER</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+KR:wght@300;400;500;600&display=swap');
+
+  :root{
+    --bg:#0a0908;
+    --panel:#15120e;
+    --panel2:#100d0a;
+    --ink:#c9bfa8;
+    --ink-dim:#8a8068;
+    --gold:#b89b6a;
+    --gold-bright:#d9c193;
+    --line:#3a3226;
+    --line-faint:#241f17;
+    --accent:#6e5c3a;
+    --blood:#5a1a16;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  html,body{height:100%;}
+
+  body{
+    background:
+      radial-gradient(circle at 50% 0%, #1a1611 0%, #0a0908 55%, #050403 100%);
+    color:var(--ink);
+    font-family:'Noto Serif KR','Cormorant Garamond',serif;
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  /* grain / fog overlay */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:9999;
+    opacity:.5;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:9998;
+    background:radial-gradient(circle at 50% 40%, transparent 40%, rgba(0,0,0,.55) 100%);
+  }
+
+  /* ===== Ornamental divider ===== */
+  .ornament{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    width:100%;
+  }
+  .ornament .bar{
+    flex:1;
+    height:1px;
+    background:linear-gradient(90deg,transparent,var(--gold) 20%,var(--gold) 80%,transparent);
+    opacity:.55;
+  }
+  .ornament svg{flex:0 0 auto;}
+  .ornament path{fill:none;stroke:var(--gold);stroke-width:1.3;opacity:.7;}
+
+  .scroll-end{ width:18px;height:18px; }
+  .scroll-end path{fill:none;stroke:var(--gold);stroke-width:1.4;opacity:.7;}
+
+  /* ===== Page wrapper ===== */
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:48px 28px 80px;
+    position:relative;
+    z-index:1;
+  }
+
+  /* ===== Title ===== */
+  header{
+    text-align:center;
+    margin-bottom:46px;
+  }
+  header .sub{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    letter-spacing:.45em;
+    font-size:.78rem;
+    color:var(--ink-dim);
+    text-transform:uppercase;
+    margin-bottom:14px;
+    padding-left:.45em;
+  }
+  header h1{
+    font-family:'Cinzel',serif;
+    font-weight:600;
+    font-size:clamp(2.2rem,6vw,4.1rem);
+    letter-spacing:.22em;
+    color:var(--gold-bright);
+    text-shadow:0 0 24px rgba(184,155,106,.25), 0 2px 4px #000;
+    padding-left:.22em;
+    line-height:1;
+  }
+  header .title-orn{ margin:22px auto 0; max-width:520px; }
+
+  /* ===== Faction section ===== */
+  .faction{ margin-bottom:54px; }
+  .faction-head{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    margin-bottom:26px;
+  }
+  .faction-head .label{
+    font-family:'Cinzel',serif;
+    font-size:1.05rem;
+    letter-spacing:.32em;
+    color:var(--gold);
+    white-space:nowrap;
+    text-transform:uppercase;
+    padding-left:.32em;
+  }
+  .faction-head .bar{
+    flex:1;height:1px;
+    background:linear-gradient(90deg,var(--gold),transparent);
+    opacity:.4;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:20px;
+  }
+  @media(max-width:860px){ .grid{grid-template-columns:repeat(2,1fr);} }
+  @media(max-width:460px){ .grid{grid-template-columns:1fr 1fr;gap:12px;} }
+
+  /* ===== Character card ===== */
+  .card{
+    cursor:pointer;
+    position:relative;
+    background:linear-gradient(160deg,var(--panel),var(--panel2));
+    border:1px solid var(--line);
+    padding:10px 10px 14px;
+    transition:transform .35s ease, border-color .35s ease, box-shadow .35s ease;
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";
+    position:absolute;inset:4px;
+    border:1px solid var(--line-faint);
+    pointer-events:none;
+    transition:border-color .35s ease;
+  }
+  .card:hover{
+    transform:translateY(-4px);
+    border-color:var(--gold);
+    box-shadow:0 10px 30px rgba(0,0,0,.6), 0 0 0 1px rgba(184,155,106,.15);
+  }
+  .card:hover::before{ border-color:rgba(184,155,106,.4); }
+
+  .card .photo{
+    position:relative;
+    aspect-ratio:1/1;
+    width:100%;
+    background:#0d0b08;
+    overflow:hidden;
+    border:1px solid var(--line-faint);
+  }
+  .card .photo img{
+    width:100%;height:100%;
+    object-fit:cover;
+    filter:grayscale(.35) contrast(1.05) brightness(.85);
+    transition:filter .4s ease, transform .5s ease;
+  }
+  .card:hover .photo img{ filter:grayscale(0) contrast(1.1) brightness(.95); transform:scale(1.05); }
+  .card .photo .empty{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    gap:8px;
+    color:var(--ink-dim);
+  }
+  .card .photo .empty svg{opacity:.4;}
+  .card .photo .empty span{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;font-size:.72rem;letter-spacing:.15em;
+  }
+  .card .photo::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(to top,rgba(5,4,3,.7),transparent 45%);
+    pointer-events:none;
+  }
+
+  .card .name{
+    margin-top:11px;
+    text-align:center;
+    font-family:'Cinzel',serif;
+    font-size:.92rem;
+    letter-spacing:.08em;
+    color:var(--ink);
+    transition:color .3s ease;
+  }
+  .card:hover .name{ color:var(--gold-bright); }
+  .card .role{
+    text-align:center;
+    margin-top:3px;
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:.74rem;
+    letter-spacing:.06em;
+    color:var(--ink-dim);
+  }
+
+  /* ===== Profile view ===== */
+  #profile{
+    display:none;
+    animation:fade .5s ease;
+  }
+  @keyframes fade{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+
+  .back{
+    display:inline-flex;
+    align-items:center;
+    gap:12px;
+    cursor:pointer;
+    background:none;border:none;
+    color:var(--ink-dim);
+    font-family:'Cinzel',serif;
+    font-size:.8rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    padding:8px 4px;
+    margin-bottom:30px;
+    transition:color .3s ease, gap .3s ease;
+  }
+  .back:hover{ color:var(--gold-bright); gap:18px; }
+  .back svg path{stroke:currentColor;}
+
+  .dossier{
+    background:
+      linear-gradient(160deg,var(--panel),var(--panel2));
+    border:1px solid var(--line);
+    position:relative;
+    padding:34px;
+  }
+  .dossier::before{
+    content:"";position:absolute;inset:8px;
+    border:1px solid var(--line-faint);
+    pointer-events:none;
+  }
+  /* corner ornaments */
+  .corner{position:absolute;width:26px;height:26px;opacity:.6;z-index:2;}
+  .corner path{fill:none;stroke:var(--gold);stroke-width:1.3;}
+  .corner.tl{top:14px;left:14px;}
+  .corner.tr{top:14px;right:14px;transform:scaleX(-1);}
+  .corner.bl{bottom:14px;left:14px;transform:scaleY(-1);}
+  .corner.br{bottom:14px;right:14px;transform:scale(-1);}
+
+  .dossier-inner{
+    display:grid;
+    grid-template-columns:300px 1fr;
+    gap:38px;
+    position:relative;
+    z-index:1;
+  }
+  @media(max-width:760px){ .dossier-inner{grid-template-columns:1fr;gap:28px;} }
+
+  .portrait{
+    aspect-ratio:2/3;
+    width:100%;
+    background:#0d0b08;
+    border:1px solid var(--line);
+    position:relative;
+    overflow:hidden;
+  }
+  .portrait::after{
+    content:"";position:absolute;inset:0;
+    box-shadow:inset 0 0 60px rgba(0,0,0,.8);
+    pointer-events:none;
+  }
+  .portrait img{
+    width:100%;height:100%;
+    object-fit:cover;
+    filter:grayscale(.25) contrast(1.05) brightness(.88);
+  }
+  .portrait .empty{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:10px;
+    color:var(--ink-dim);text-align:center;padding:20px;
+  }
+  .portrait .empty svg{opacity:.4;}
+  .portrait .empty span{
+    font-family:'Cormorant Garamond',serif;font-style:italic;
+    font-size:.78rem;letter-spacing:.12em;line-height:1.6;
+  }
+
+  /* right info */
+  .info .p-name{
+    font-family:'Cinzel',serif;
+    font-weight:600;
+    font-size:clamp(1.6rem,4vw,2.4rem);
+    color:var(--gold-bright);
+    letter-spacing:.08em;
+    text-shadow:0 0 18px rgba(184,155,106,.2),0 2px 3px #000;
+    line-height:1.1;
+  }
+  .info .p-faction{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    color:var(--gold);
+    letter-spacing:.18em;
+    font-size:.82rem;
+    margin-top:6px;
+    text-transform:uppercase;
+  }
+  .info .info-orn{ margin:20px 0 24px; }
+
+  .field{
+    display:grid;
+    grid-template-columns:96px 1fr;
+    gap:16px;
+    padding:13px 0;
+    border-bottom:1px solid var(--line-faint);
+    align-items:baseline;
+  }
+  .field:last-child{border-bottom:none;}
+  .field .key{
+    font-family:'Cinzel',serif;
+    font-size:.72rem;
+    letter-spacing:.18em;
+    color:var(--gold);
+    text-transform:uppercase;
+    white-space:nowrap;
+  }
+  .field .val{
+    font-family:'Noto Serif KR',serif;
+    font-weight:300;
+    font-size:.96rem;
+    color:var(--ink);
+    line-height:1.75;
+  }
+  .field.block{grid-template-columns:1fr;gap:8px;}
+  .field.block .key{padding-bottom:2px;}
+
+  footer{
+    margin-top:60px;
+    text-align:center;
+    color:var(--ink-dim);
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;
+    font-size:.78rem;
+    letter-spacing:.2em;
+  }
+  footer .foot-orn{max-width:360px;margin:0 auto 16px;}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="main">
+    <header>
+      <div class="sub">For the last funeral</div>
+      <h1>UNDERTAKER</h1>
+      <div class="ornament title-orn">
+        <span class="bar"></span>
+        <svg width="40" height="14" viewBox="0 0 40 14"><path d="M2 7 H14 M20 2 L26 7 L20 12 M26 7 H38" /><circle cx="20" cy="7" r="2.4" fill="none" stroke="#b89b6a" stroke-width="1.3"/></svg>
+        <span class="bar"></span>
+      </div>
+    </header>
+
+    <div id="factions"></div>
+
+    <footer>
+      <div class="ornament foot-orn"><span class="bar"></span>
+        <svg class="scroll-end" viewBox="0 0 18 18"><path d="M9 2 C4 2 4 9 9 9 C14 9 14 16 9 16"/></svg>
+        <span class="bar"></span></div>
+    </footer>
+  </div>
+
+  <div id="profile">
+    <button class="back" onclick="uiGoBack()">
+      <svg width="26" height="12" viewBox="0 0 26 12"><path d="M24 6 H4 M9 1 L3 6 L9 11" fill="none" stroke-width="1.4"/></svg>
+      돌아가기
+    </button>
+
+    <div class="dossier">
+      <svg class="corner tl" viewBox="0 0 26 26"><path d="M2 14 V4 H12 M2 4 Q8 4 8 10"/></svg>
+      <svg class="corner tr" viewBox="0 0 26 26"><path d="M2 14 V4 H12 M2 4 Q8 4 8 10"/></svg>
+      <svg class="corner bl" viewBox="0 0 26 26"><path d="M2 14 V4 H12 M2 4 Q8 4 8 10"/></svg>
+      <svg class="corner br" viewBox="0 0 26 26"><path d="M2 14 V4 H12 M2 4 Q8 4 8 10"/></svg>
+
+      <div class="dossier-inner">
+        <div>
+          <div class="portrait" id="p-portrait"></div>
+        </div>
+        <div class="info" id="p-info"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =========================================================
+   캐릭터 데이터
+   ========================================================= */
+const FACTIONS = [
+  {
+    name:"묘지",
+    members:[
+      {
+        name:"묘지기",
+        role:"인도자",
+        photo:"GK_TN.webp",
+        portrait:"GK_tl_cowboyshot.png",
+        gender:"여",
+        age:"불명",
+        place:"묘지",
+        personality:"부드럽고 자애롭다. 웬만하면 당황하지 않는다.",
+        trait:"164cm. 장의사들의 안내자. 묘지를 관리하고 장의사들에게 안전한 장소를 제공해준다."
+      },
+      { name:"리암", role:"모험가", photo:"LI_TN.webp", portrait:"LI_tl_cowboyshot.png", gender:"남", age:"22", place:"묘지", personality:"활기찬 희망주의자. 쾌남.", trait:"177cm. 장의사는 아니지만, 장의사들이 세상의 희망이라고 생각하기 때문에 그들을 돕고 싶어서 여정에 올랐다." },
+      { name:"샬롯", role:"장의사", photo:"SH_TN.webp", portrait:"SH_tl_cowboyshot.png", gender:"여", age:"21", place:"묘지", personality:"소심하고 수줍다. 과거의 일 때문에 더 소심해진 것 같다.", trait:"153cm. 장의사지만, 전투 능력이 없어서 장송곡 연주자로 활동하고 있다. 노래에 치유의 힘이 있다." },
+      { name:"블레이크", role:"장의사", photo:"BL_TN.webp", portrait:"BL_tl_cowboyshot.png", gender:"남", age:"35", place:"묘지", personality:"염세적. 까칠하지만 곤경에 처한 사람을 지나치지 못한다.", trait:"186cm. 왼발을 부상당해서 절뚝거린다. 부상 후에 마음이 꺾여 여정을 포기했다." },
+    ]
+  },
+  {
+    name:"헬리오스",
+    members:[
+      { name:"백의 성군", role:"미쳐버린 왕", photo:"WK_TN.webp", portrait:"WK_tl_cowboyshot.png", gender:"여", age:"29", place:"헬리오스", personality:"성인군자. 단호하지만 부드럽다. 적어도 옛날에는.", trait:"200cm. 백성을 너무 사랑한 나머지 그들이 고통 받는 모습을 보고 미쳐버렸다. 비감염자들이 역병에 걸리기 전에 그들을 학살하고, 감염자들은 고통스럽다는 말을 하지 못 하게 난도질했다." },
+      { name:"카터", role:"눈먼 기사", photo:"CT_TN.webp", portrait:"CT_tl_cowboyshot.png", gender:"남", age:"27", place:"헬리오스", personality:"묵묵함, 충직함. 자기징벌적이다.", trait:"193cm. 前 백의 성군 근위대장. 주군을 막지 못한 죄책감에 빠져있다. 참상을 보다가 미쳐버리기 전에 스스로 눈을 멀게 했다. 동료들의 시신을 지키고 있다." },
+      { name:"로웬", role:"귀족 아가씨", photo:"RW_TN.webp", portrait:"RW_tl_cowboyshot.png", gender:"여", age:"24", place:"헬리오스", personality:"현실주의자. 강인하며, 누군가를 보호해야 한다는 사명감을 가지고 있다. 살짝 까칠하다.", trait:"164cm. 온실 속 화초처럼 자랐던 귀족 아가씨지만, 참상을 보고 일어섰다. 검술에 재능이 있다. 생존자들을 찾아 보호하는 일을 하고 있다." },
+      { name:"가리온", role:"처형자", photo:"GR_TN.webp", portrait:"GR_tl_cowboyshot.png", gender:"남", age:"40", place:"헬리오스", personality:"맹목적이다. 목석.", trait:"195cm. 성군을 존경하여 그녀의 학살 행위에 어떤 뜻이 있으리라 믿고 있다. 홀로 학살 행위를 돕고 있다." },
+    ]
+  },
+  {
+    name:"루나리스",
+    members:[
+      { name:"흑의 폭군", role:"통치자", photo:"BK_TN.webp", portrait:"BK_tl_cowboyshot.png", gender:"남", age:"37", place:"루나리스", personality:"인류주의적. 가장 큰 것을 위해 큰 것을 희생할 수 있는 강한 결단력을 가지고 있다.", trait:"185cm. 거대한 비밀을 품고 있다. 진실을 백성들에게 알리지 않기 위해 국가를 엄격히 통제하는 폭군을 자처했다." },
+      { name:"하트", role:"연금술사", photo:"HT_TN.webp", portrait:"HT_tl_cowboyshot.png", gender:"여", age:"23", place:"루나리스", personality:"호기심 과다. 어리버리하다. 표정 변화가 적지만 무감정한 건 아니다.", trait:"163cm. 前 흑의폭군 소속 연금술사. 진실의 일부를 알게 되어 혀가 잘렸다. 오리 인형(호문쿨루스)을 통해 대화한다." },
+      { name:"제이드", role:"작가", photo:"JD_TN.webp", portrait:"JD_tl_cowboyshot.png", gender:"남", age:"22", place:"루나리스", personality:"소심하고 신중하다.", trait:"171cm. 진실을 탐색하는 작가. 가족이 진실을 알고 몰살당했다. 혼자 살아남았다는 죄책감이 있다." },
+      { name:"실비아", role:"학자", photo:"SV_TN.webp", portrait:"SV_tl_cowboyshot.png", gender:"여", age:"28", place:"루나리스", personality:"침착하고 냉정하다. 지적으로 오만하다.", trait:"167cm. 가족이 전부 전염되었기 때문에, 포기하지 않고 치료법을 탐색하고 있다. 하트의 혀를 자른 장본인이다." },
+    ]
+  },
+  {
+    name:"고성 이리디아",
+    members:[
+      { name:"아리아", role:"거울 자매", photo:"AR_TN.webp", portrait:"AR_tl_cowboyshot.png", gender:"여", age:"24", place:"이리디아", personality:"우아하지만 위선적이다. 계략가.", trait:"157cm. 아리엘의 언니. 동생과 함께 저택의 인간들을 제물로 바치고 위대한 존재와 계약하여 거울 세계로 도피했다. 동생을 아낀다." },
+      { name:"아리엘", role:"거울 자매", photo:"AL_TN.webp", portrait:"AL_tl_cowboyshot.png", gender:"여", age:"23", place:"이리디아", personality:"절대적 자기중심성. 어른스러운 척하지만 미성숙하다.", trait:"165cm. 아리아의 동생. 거울 속에는 한 번에 한 명만 진입 가능하기 때문에, 주로 밖에 있는다. 언니에게 의존하고 있다." },
+      { name:"미샤", role:"메이드", photo:"MS_TN.webp", portrait:"MS_tl_cowboyshot.png", gender:"여", age:"21", place:"이리디아", personality:"순수하다. 어딘가 멍하다.", trait:"156cm. 메이드 자동인형. 인간의 마음을 원한다. 고성을 떠나기를 꿈꾸고 있다." },
+      { name:"헨리", role:"집사", photo:"HR_TN.webp", portrait:"HR_tl_cowboyshot.png", gender:"남", age:"27", place:"이리디아", personality:"친절하지만 기계적이다. 무감정, 공감 결여.", trait:"188cm. 집사 자동인형. 그야말로 완벽한 집사. 감정 영역이 미완성되어있다." },
+    ]
+  },
+  {
+    name:"그노시스",
+    members:[
+      { name:"파에톤", role:"교주", photo:"PT_TN.webp", portrait:"PT_tl_cowboyshot.png", gender:"남", age:"불명", place:"일식의 제단", personality:"광기에 차 있다. 비열하다.", trait:"175cm. 그노시스의 교주. 위대한 존재를 위해 온갖 잔혹한 의식을 치른다." },
+      { name:"비페라", role:"광신도", photo:"VP_TN.webp", portrait:"VP_tl_cowboyshot.png", gender:"여", age:"27", place:"일식의 제단", personality:"가스라이팅의 대가. 무해한 척 다정함을 연기한다.", trait:"164cm. 그노시스의 신도. 채워져 있는 수갑은 무력함을 어필하기 위함이다. 상대를 사로잡아 제물로 만든다. 말솜씨가 교묘하다." },
+      { name:"세레스", role:"광신도", photo:"SR_TN.webp", portrait:"SR_tl_cowboyshot.png", gender:"여", age:"23", place:"일식의 제단", personality:"소녀답고 발랄하다. 그러나 비페라를 건드리면 가차 없다.", trait:"비페라가 주워온 고아. 신앙심이 없다. 사실상 비페라를 맹신하는 신도. 배신을 용납하지 못한다." },
+      { name:"나단", role:"배교자", photo:"NT_TN.webp", portrait:"NT_tl_cowboyshot.png", gender:"남", age:"25", place:"일식의 제단", personality:"정중하지만 화가 많다. 단단한 신념을 가지고 있다.", trait:"그노시스의 사제였으나, 인신공양 현장을 보고 배교자가 되었다. 근처에 숨어 지내며 그노시스를 몰락시킬 기회를 엿보고 있다." },
+    ]
+  },
+];
+
+const emptyPhoto = `<div class="empty">
+  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#8a8068" stroke-width="1.1"><circle cx="12" cy="9" r="3.5"/><path d="M5 20 C5 15 19 15 19 20"/></svg>
+  <span>No Portrait</span></div>`;
+const emptyPortrait = `<div class="empty">
+  <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#8a8068" stroke-width="1"><circle cx="12" cy="9" r="3.5"/><path d="M5 20 C5 15 19 15 19 20"/></svg>
+  <span>사진 없음<br>2 : 3</span></div>`;
+
+let mainScrollY = 0;  // 메인 화면 스크롤 위치 저장
+
+function buildMain(){
+  const root = document.getElementById('factions');
+  root.innerHTML = FACTIONS.map((f,fi)=>`
+    <section class="faction">
+      <div class="faction-head">
+        <span class="label">${f.name}</span>
+        <span class="bar"></span>
+      </div>
+      <div class="grid">
+        ${f.members.map((m,mi)=>`
+          <div class="card" onclick="openProfile(${fi},${mi})">
+            <div class="photo">
+              ${m.photo ? `<img src="${m.photo}" alt="${m.name}">` : emptyPhoto}
+            </div>
+            <div class="name">${m.name}</div>
+            <div class="role">${m.role||''}</div>
+          </div>`).join('')}
+      </div>
+    </section>`).join('');
+}
+
+// 화면 그리기 로직 분리 (History API와 연동하기 위해)
+function renderProfile(fi, mi) {
+  const f = FACTIONS[fi];
+  const m = f.members[mi];
+  document.getElementById('p-portrait').innerHTML =
+    m.portrait ? `<img src="${m.portrait}" alt="${m.name}">` : emptyPortrait;
+
+  document.getElementById('p-info').innerHTML = `
+    <div class="p-name">${m.name}</div>
+    <div class="p-faction">${f.name} · ${m.role||''}</div>
+    <div class="ornament info-orn"><span class="bar"></span>
+      <svg width="30" height="12" viewBox="0 0 30 12"><path d="M2 6 H10 M20 6 H28" fill="none" stroke="#b89b6a" stroke-width="1.2"/><circle cx="15" cy="6" r="2.3" fill="none" stroke="#b89b6a" stroke-width="1.2"/></svg>
+      <span class="bar"></span></div>
+
+    <div class="field"><span class="key">이름</span><span class="val">${m.name}</span></div>
+    <div class="field"><span class="key">성별</span><span class="val">${m.gender}</span></div>
+    <div class="field"><span class="key">나이</span><span class="val">${m.age}</span></div>
+    <div class="field"><span class="key">관련 장소</span><span class="val">${m.place}</span></div>
+    <div class="field block"><span class="key">성격</span><span class="val">${m.personality}</span></div>
+    <div class="field block"><span class="key">특징</span><span class="val">${m.trait}</span></div>
+  `;
+
+  document.getElementById('main').style.display='none';
+  document.getElementById('profile').style.display='block';
+  window.scrollTo({top:0,behavior:'instant'});
+}
+
+// 카드 클릭 시 프로필 열기 & History 추가
+function openProfile(fi,mi){
+  mainScrollY = window.scrollY;        // 현재 메인 화면 스크롤 위치 기억
+  renderProfile(fi, mi);
+  // 브라우저 뒤로가기를 위한 상태 저장 (스크롤 위치도 함께 보관)
+  try { history.pushState({ page: 'profile', fi: fi, mi: mi, scrollY: mainScrollY }, ''); } catch(e){}
+}
+
+// 메인 화면 보이기 로직 (저장된 위치로 스크롤 복원)
+function showMain(){
+  document.getElementById('profile').style.display='none';
+  document.getElementById('main').style.display='block';
+  window.scrollTo({top: mainScrollY, behavior:'instant'});
+}
+
+// UI 내의 '돌아가기' 버튼 클릭 시 실행
+function uiGoBack() {
+  if (history.state && history.state.page === 'profile') {
+    // History에 프로필 진입 기록이 있으면 브라우저 뒤로가기 실행 (자연스럽게 popstate 발생)
+    history.back();
+  } else {
+    // 기록이 없다면 강제로 메인화면을 보여줌
+    showMain();
+  }
+}
+
+// 브라우저 뒤로가기/앞으로가기 이벤트 감지
+window.addEventListener('popstate', (event) => {
+  if (event.state && event.state.page === 'profile') {
+    // 앞으로 가기로 다시 프로필 페이지에 왔을 때
+    if (typeof event.state.scrollY === 'number') mainScrollY = event.state.scrollY;
+    renderProfile(event.state.fi, event.state.mi);
+  } else {
+    // 메인화면으로 돌아갔을 때 (저장된 위치로 복원)
+    showMain();
+  }
+});
+
+// 브라우저가 자동으로 스크롤 위치를 건드리지 않도록 수동 제어
+try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch(e){}
+
+// 페이지 최초 진입 시 기본 History 상태 설정
+try { history.replaceState({ page: 'main' }, ''); } catch(e){}
+buildMain();
+</script>
+</body>
+</html>
